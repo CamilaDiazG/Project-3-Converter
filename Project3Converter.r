@@ -5,8 +5,6 @@ library(igraph)
 curve_multiple <- function(graph) {
   edges <- as_ids(E(graph))
   # Lógica para calcular curvaturas si hay aristas duplicadas en la misma dirección
-  # (igraph a veces requiere un vector numérico para edge.curved)
-  # Si prefieres la alternativa simple: junta los símbolos en una sola arista ej: "a, b"
 }
 
 ui <- fluidPage(
@@ -14,7 +12,7 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      # 3. Área de texto para la gramática
+      # Área de texto para la gramática
       textAreaInput("grammarInput", "Type your regular grammar:", 
                     value = "S -> aA\nS -> bA\nA -> aB\nA -> bB\nA -> a\nB -> aA\nB -> bA", 
                     rows = 10),
@@ -25,7 +23,7 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      # 4. Sección donde se despliega el autómata
+      #Sección donde se despliega el autómata
       plotOutput("automatonPlot", height = "500px")
     )
   )
@@ -33,7 +31,7 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
-  # 1. Hacer uso de programación reactiva para procesar la gramática en tiempo real
+  #procesar la gramática en tiempo real
   parsedGrammar <- reactive({
     req(input$grammarInput)
     
@@ -59,7 +57,7 @@ server <- function(input, output) {
           to <- substr(right, 2, 2)
         } else if (nchar(right) == 1) {
           symbol <- right
-          to <- "Z" # 8. El estado final es Z
+          to <- "Z" #El estado final es Z
         } else {
           next
         }
@@ -73,7 +71,7 @@ server <- function(input, output) {
     data.frame(from = from_nodes, to = to_nodes, label = labels, stringsAsFactors = FALSE)
   })
   
-  # 9. Determinar si es DFA o NFA
+  #Determinar si es DFA o NFA
   output$automatonType <- renderText({
     df <- parsedGrammar()
     if (nrow(df) == 0) return("Waiting for input...")
@@ -89,26 +87,25 @@ server <- function(input, output) {
     }
   })
   
-  # 5. Renderizar el autómata en tiempo real
+  #Renderizar el autómata en tiempo real
   output$automatonPlot <- renderPlot({
     df <- parsedGrammar()
     req(nrow(df) > 0)
     
-    # Crear los enlaces para igraph (par origen -> destino)
+    # Crear los enlaces para igraph 
     edges <- as.vector(t(df[, c("from", "to")]))
     g <- graph(edges, directed = TRUE)
     
     # Asignar etiquetas a las aristas
     E(g)$label <- df$label
     
-    # 7 y 8. Configurar colores de los nodos
+    #colores de los nodos
     v_names <- V(g)$name
     node_colors <- rep("white", length(v_names))
     node_colors[v_names == "S"] <- "green"
     node_colors[v_names == "Z"] <- "red"
     
     # Dibujar el grafo
-    # Nota: Para las curvas puedes usar la función propuesta o agrupar labels
     plot(g, 
          edge.label = E(g)$label,
          vertex.color = node_colors,
