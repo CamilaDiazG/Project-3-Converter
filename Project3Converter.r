@@ -114,7 +114,6 @@ server <- function(input, output) {
          vertex.label.font = 2,
          edge.arrow.size = 0.5,
          edge.label.color = "black",
-         # edge.curved = ... (aquí aplicas el tip de las curvas si repites aristas)
          layout = layout_with_kk)
   })
 }
