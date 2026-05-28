@@ -34,6 +34,8 @@ server <- function(input, output) {
   #procesar la gramática en tiempo real
   parsedGrammar <- reactive({
     req(input$grammarInput)
+
+    
     
     # Separar por líneas limpiando espacios
     lines <- strsplit(input$grammarInput, "\n")[[1]]
@@ -91,8 +93,11 @@ server <- function(input, output) {
   output$automatonPlot <- renderPlot({
     df <- parsedGrammar()
     req(nrow(df) > 0)
+
+    # Agrupa los símbolos si van del mismo origen al mismo destino
+    df <- aggregate(label ~ from + to, data = df, FUN = paste, collapse = ", ")
     
-    # Crear los enlaces para igraph 
+    # Crear los enlaces para igraph (par origen -> destino)
     edges <- as.vector(t(df[, c("from", "to")]))
     g <- graph(edges, directed = TRUE)
     
