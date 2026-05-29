@@ -1,12 +1,6 @@
 library(shiny)
 library(igraph)
 
-# Función auxiliar para calcular curvaturas de aristas repetidas
-curve_multiple <- function(graph) {
-  edges <- as_ids(E(graph))
-  # Lógica para calcular curvaturas si hay aristas duplicadas en la misma dirección
-}
-
 ui <- fluidPage(
   titlePanel("Converter: Regular Grammar to Finite Automaton"),
   
