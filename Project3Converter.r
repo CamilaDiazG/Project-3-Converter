@@ -11,7 +11,7 @@ ui <- fluidPage(
                     value = "S -> aA\nS -> bA\nA -> aB\nA -> bB\nA -> a\nB -> aA\nB -> bA", 
                     rows = 10),
       br(),
-      # 9. Etiqueta dinámica para el tipo de autómata
+      #Etiqueta dinámica para el tipo de autómata
       h4("Automaton Type:"),
       textOutput("automatonType")
     ),
@@ -67,22 +67,32 @@ server <- function(input, output) {
     data.frame(from = from_nodes, to = to_nodes, label = labels, stringsAsFactors = FALSE)
   })
   
-  #Determinar si es DFA o NFA
+# Determinar si es DFA o NFA
   output$automatonType <- renderText({
     df <- parsedGrammar()
     if (nrow(df) == 0) return("Waiting for input...")
     
-    # Validar si un estado va al mismo lugar con el mismo símbolo de forma duplicada
-    # O si desde un estado sale el mismo símbolo hacia destinos diferentes
-    is_nfa <- any(duplicated(df[, c("from", "label")]))
+    #Un estado saca la misma letra a diferentes destinos
+    is_nfa_duplicados <- any(duplicated(df[, c("from", "label")]))
     
-    if (is_nfa) {
+    # Función de Transición Total
+    # Sacamos el alfabeto de toda la gramatica (Ej. "a", "b", "q")
+    alfabeto <- unique(df$label) 
+    
+    # Contamos cuántas letras diferentes salen de cada estado origen
+    letras_por_estado <- aggregate(label ~ from, data = df, FUN = function(x) length(unique(x)))
+    
+    # Revisamos si algún estado origen tiene menos letras que el tamaño del alfabeto total
+    is_nfa_incompleto <- any(letras_por_estado$label < length(alfabeto))
+    
+    # Si tiene duplicados o le faltan letras a algún estado, es NFA
+    if (is_nfa_duplicados || is_nfa_incompleto) {
       "non-deterministic"
     } else {
       "deterministic"
     }
   })
-  
+
   #Renderizar el autómata en tiempo real
   output$automatonPlot <- renderPlot({
     df <- parsedGrammar()
